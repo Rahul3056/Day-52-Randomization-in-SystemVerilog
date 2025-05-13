@@ -1,0 +1,90 @@
+## ✅ **Example: Randomized Packet with Constraints**
+
+We will create a `Packet` class that:
+
+* Randomizes the `addr`, `data`, and `rw` (read/write) fields
+* Applies constraints: address range, data conditions based on `rw`
+* Uses `.randomize()` in a testbench
+
+---
+
+### **1. Packet Class with Constraints**
+
+```systemverilog
+class Packet;
+
+    rand bit [7:0] addr;     // Address: 8 bits
+    rand bit [15:0] data;    // Data: 16 bits
+    rand bit rw;             // Read = 0, Write = 1
+
+    // Constraints
+    constraint addr_limit {
+        addr inside {[16'h10 : 16'h50]}; // valid address range
+    }
+
+    constraint data_valid {
+        if (rw) {
+            data > 100 && data < 5000;   // For writes: valid data range
+        } else {
+            data == 0;                   // For reads: data is ignored (set to 0)
+        }
+    }
+
+    // Display method
+    function void display();
+        $display("Addr: 0x%0h | RW: %0b | Data: %0d", addr, rw, data);
+    endfunction
+
+endclass
+```
+
+---
+
+### **2. Testbench**
+
+```systemverilog
+module tb;
+
+    Packet pkt = new();
+
+    initial begin
+        $display("Randomized Packet Transactions:");
+        repeat (5) begin
+            if (pkt.randomize()) begin
+                pkt.display();
+            end else begin
+                $display("Randomization failed!");
+            end
+        end
+        $finish;
+    end
+
+endmodule
+```
+
+---
+
+### **3. Sample Output**
+
+```
+Randomized Packet Transactions:
+Addr: 0x2e | RW: 1 | Data: 2735
+Addr: 0x3c | RW: 0 | Data: 0
+Addr: 0x1f | RW: 1 | Data: 4012
+Addr: 0x43 | RW: 1 | Data: 356
+Addr: 0x28 | RW: 0 | Data: 0
+```
+
+---
+
+## ✅ What This Example Shows
+
+| Concept            | Shown In Example                           |
+| ------------------ | ------------------------------------------ |
+| `rand` declaration | Random fields: addr, data, rw              |
+| `.randomize()`     | Generates valid combinations automatically |
+| Constraints        | Address range, conditional data generation |
+| Conditional logic  | Based on `rw`, `data` is controlled        |
+| Practical use      | Simulates realistic memory transactions    |
+
+
